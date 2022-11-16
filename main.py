@@ -201,6 +201,15 @@ async def leaderboard(ctx, *args):
         await ctx.channel.send(embed=await generate_lb_embed())
     await ctx.message.delete()
 
+@bot.command()
+async def delete(ctx, *args):
+    if ctx.message.author.id == 255776481785937922:
+        try:
+            await ctx.message.delete()
+        except:
+            pass
+    await ctx.message.delete()
+
 
 @bot.event
 async def on_raw_reaction_add(payload):
@@ -208,6 +217,8 @@ async def on_raw_reaction_add(payload):
         return
 
     if payload.emoji.name == "🥐":
+        if payload.user_id in current_croissants[current_croissants_msg[payload.message_id]]["peoples"]:
+            return
         current_croissants[current_croissants_msg[payload.message_id]]["peoples"].append(payload.user_id)
         msg = await bot.get_channel(cid).fetch_message(payload.message_id)
         await msg.edit(embed=await generate_main_embed(current_croissants_msg[payload.message_id]))
