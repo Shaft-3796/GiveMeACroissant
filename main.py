@@ -18,7 +18,7 @@ lbcid = 1027553126582079568
 """
 # TEST
 sid = 738090561021542510
-cid = 1006194712165744681
+cid = 1036383349989724210
 lbcid = 1006194712165744681
 """
 
@@ -210,6 +210,16 @@ async def delete(ctx, *args):
             pass
     await ctx.message.delete()
 
+@bot.command()
+async def clear(ctx, *args):
+    if ctx.message.author.id == 255776481785937922:
+        try:
+            channel = await bot.fetch_channel(cid)
+            await channel.purge(limit=100)
+        except:
+            pass
+    await ctx.message.delete()
+
 
 @bot.event
 async def on_raw_reaction_add(payload):
@@ -229,6 +239,7 @@ async def on_raw_reaction_add(payload):
         await msg.channel.send(embed=await generate_post_embed(payload.user_id))
         del current_croissants[current_croissants_msg[payload.message_id]]
         del current_croissants_msg[payload.message_id]
+        await backup()
 
 
 bot.run(token)
