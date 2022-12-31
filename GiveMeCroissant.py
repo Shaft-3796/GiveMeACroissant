@@ -62,7 +62,7 @@ class Croissanting:
 
     async def stop(self):
         # Embed
-        embed = discord.Embed(title="La croissantage est terminée !", color=0xf5ce42)
+        embed = discord.Embed(title="La croissantage est terminé !", color=0xf5ce42)
         embed.set_thumbnail(
             url="https://emojipedia-us.s3.dualstack.us-west-1.amazonaws.com/thumbs/120/apple/325/croissant_1f950.png")
         embed.set_footer(text="Made with ❤️ by Hugo")
