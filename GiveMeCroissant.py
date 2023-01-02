@@ -1,3 +1,5 @@
+import json
+import os
 import time
 import discord
 
@@ -85,11 +87,11 @@ class Croissanting:
 
 # Instanced for every guild
 class CroissantGuild:
-    def __init__(self, _bot, _guild_id, _channel_id, pick_delay):
+    def __init__(self, _bot, _guild_id, _channel_id, _pick_delay):
         self.bot = _bot
         self.guild_id = _guild_id
         self.channel_id = _channel_id
-        self.pick_delay = pick_delay  # In seconds, time between two croissant picking
+        self.pick_delay = _pick_delay  # In seconds, time between two croissant picking
 
         self.croissantings = {}  # Key: user_id, Value: Croissanting instance
 
@@ -107,14 +109,14 @@ class CroissantGuild:
 
 
 class Client(discord.Client):
-    def __init__(self, _token: str, _guilds: dict, constants: dict, *args, **kwargs):
+    def __init__(self, _token: str, _guilds: dict, params: dict, *args, **kwargs):
         # Call discord.py Client constructor
         super().__init__(*args, **kwargs)
 
         self._guilds = _guilds  # Used to instanciate guilds in instanciate_guilds()
         self.croissant_guilds = {}  # Key: guild_id, Value: Guilds instance
 
-        self.constants = constants
+        self.params = params
 
         self.run(_token)
 
@@ -124,7 +126,7 @@ class Client(discord.Client):
             if guild.id in self._guilds:
                 # Instanciate croissant guild object
                 self.croissant_guilds[guild.id] = CroissantGuild(self, guild.id, self._guilds[guild.id],
-                                                                 self.constants["pick_delay"])
+                                                                 self.params["pick_delay"])
 
     # Events & Commands
     async def on_ready(self):
@@ -134,8 +136,19 @@ class Client(discord.Client):
     async def on_message(self, message):
         if message.author.bot:
             return
+        if message.author.id in self.params["admin_ids"]:
+            if message.content == "!delete":
+                await self.delete(message)
         if message.guild.id in self.croissant_guilds:
             await self.croissant_guilds[message.guild.id].on_message(message)
+
+    @staticmethod
+    async def delete(message):
+        try:
+            msg = await message.channel.fetch_message(message.content.split(" ")[1])
+            await msg.delete()
+        except discord.NotFound or discord.Forbidden or discord.HTTPException or ValueError:
+            message.response.send_message("Message introuvable ou arguments incorrectes !", ephemeral=True)
 
 
 # --- CONSTANTS ---
@@ -145,8 +158,14 @@ test_token = "token"
 guilds = {}  # Key: guild_id, Value: bot channel id
 test_guilds = {}  # Key: guild_id, Value: bot channel id
 
+admin_ids = []  # Ids of bot admins
+
 pick_delay = 300  # In seconds, time between two croissant picking
+
+# For eventual future use
+if not os.path.exists("croissanting/"):
+    os.mkdir("croissanting/")
 
 # --- Wrapper initialisation ---
 intents = discord.Intents.all()
-client = Client(test_token, test_guilds, {"pick_delay": pick_delay}, intents=intents)
+client = Client(test_token, test_guilds, {"pick_delay": pick_delay, "admin_ids": admin_ids}, intents=intents)
