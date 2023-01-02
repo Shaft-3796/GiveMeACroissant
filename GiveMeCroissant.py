@@ -142,13 +142,15 @@ class Client(discord.Client):
         if message.guild.id in self.croissant_guilds:
             await self.croissant_guilds[message.guild.id].on_message(message)
 
-    @staticmethod
-    async def delete(message):
+    async def delete(self, message):
         try:
-            msg = await message.channel.fetch_message(message.content.split(" ")[1])
+            guild, guild_instance = message.guild, self.croissant_guilds[message.guild.id]
+            channel = await guild.fetch_channel(guild_instance.channel_id)
+            msg = await channel.fetch_message(message.content.split(" ")[1])
             await msg.delete()
+            await message.delete()
         except discord.NotFound or discord.Forbidden or discord.HTTPException or ValueError:
-            message.response.send_message("Message introuvable ou arguments incorrectes !", ephemeral=True)
+            print("Error while deleting message")
 
 
 # --- CONSTANTS ---
